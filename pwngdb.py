@@ -128,6 +128,7 @@ class PwnCmd(object):
     def magic(self):
         """ Print usefual variables or function in glibc """
         getarch()
+        libcbs = libcbase()
         
         try :
             print("========== function ==========")
@@ -137,7 +138,7 @@ class PwnCmd(object):
             for v in magic_variable :
                 cmd = "x/" + word + "&" +v
                 content = gdb.execute(cmd,to_string=True).split(":")[1].strip()
-                offset = hex(getoff("&"+ v))
+                offset = hex(libcbs + getoff("&"+ v))
                 pad = 36 - len(v) - len(offset) - 2
                 print("\033[34m%s\033[33m(%s)\033[37m%s: \033[37m%s" % (v, offset, ' ' *pad, content))
         except :
