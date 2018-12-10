@@ -209,6 +209,7 @@ class PwnCmd(object):
         try :
             print("Attaching to %s ..." % processname)
             pidlist = subprocess.check_output("pidof " + processname,shell=True).decode('utf8').split()
+            print(pidlist[0])
             gdb.execute("attach " + pidlist[0])
             getheapbase()
             libcbase()
@@ -383,7 +384,7 @@ def getprocname(relative=False):
     except:
         data = gdb.execute("info files",to_string=True)
         if data:
-            procname = re.search('Symbols from "(.*)"',data).group(1)
+            procname = re.search('`(.*)\',',data).group(1)
     if procname and relative :
         return procname.split("/")[-1]
     return procname
