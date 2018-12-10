@@ -20,7 +20,7 @@ tcache_max_bin = 0
 
 # chunks
 top = {}
-fastbinsize = 10
+fastbinsize = 13
 fastbin = []
 fastchunk = [] #save fastchunk address for chunkinfo check
 tcache_entry = []
@@ -1204,7 +1204,7 @@ def putheapinfo(arena=None):
                 print(" <--> ",end = "")
         print("") 
     for idx,bins in largebin.items():
-        print("\033[33m  %15s[%2d]:\033[37m " % ("largebin",idx),end="")
+        print("\033[33m  %15s[%2d]:\033[37m " % ("largebin",idx-64),end="")
         for chunk in bins :
             if "memerror" in chunk :
                 print("\033[31m0x%x (%s)\033[37m" % (chunk["addr"],chunk["memerror"]),end = "")
@@ -1275,7 +1275,8 @@ def parse_heap(arena=None):
         print("can't find heap info")
         return
 
-    chunkaddr = get_heapbase()
+    hb = get_heapbase()
+    chunkaddr = hb
     if not chunkaddr:
         print("Can't find heap")
         return
@@ -1287,6 +1288,9 @@ def parse_heap(arena=None):
             cmd = "x/" + word + hex(chunkaddr + capsize*1)
             size = int(gdb.execute(cmd,to_string=True).split(":")[1].strip(),16)
             cmd = "x/" + word + hex(chunkaddr + capsize*2)
+            if size == 0 and chunkaddr == hb :
+                chunkaddr += capsize*2
+                continue
             fd = int(gdb.execute(cmd,to_string=True).split(":")[1].strip(),16)
             cmd = "x/" + word + hex(chunkaddr + capsize*3)
             bk = int(gdb.execute(cmd,to_string=True).split(":")[1].strip(),16)
