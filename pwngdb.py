@@ -296,8 +296,22 @@ class PwngdbCmd(gdb.Command):
     def __init__(self):
         super(PwngdbCmd,self).__init__("pwngdb",gdb.COMMAND_USER)
 
+    def try_eval(self, expr):
+        try:
+            return gdb.parse_and_eval(expr)
+        except:
+            #print("Unable to parse expression: {}".format(expr))
+            return expr
+
+    def eval_argv(self, expressions):
+        """ Leave command alone, let GDB parse and evaluate arguments """
+        return [expressions[0]] + [ self.try_eval(expr) for expr in expressions[1:] ]
+
     def invoke(self,args,from_tty):
         self.dont_repeat()
+        # Don't eval expression in PwngdbCmd commands
+        #expressions = gdb.string_to_argv(args)
+        #arg = self.eval_argv(expressions)
         arg = args.split()
         if len(arg) > 0 :
             cmd = arg[0]
@@ -593,11 +607,11 @@ def getfmtarg(addr):
     if arch == "i386" :
         start = get_reg("esp")
         idx = (addr- start)/4
-        print("The index of format argument : %d" % idx)
+        print("The index of format argument : %d (\"\%%%d$p\")" % (idx,idx - 1))
     elif arch == "x86-64" :
         start = get_reg("rsp")
         idx = (addr - start)/8 + 6
-        print("The index of format argument : %d" % idx)
+        print("The index of format argument : %d (\"\%%%d$p\")" % (idx,idx - 1))
     else :
         print("Not support the arch")
 
